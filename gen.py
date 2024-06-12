@@ -1,9 +1,7 @@
 import cv2
 import numpy as np
-import os
-import json
+
 from utils import build_chains, get_instructions
-from matplotlib import pyplot as plt
 
 # 读取关于如何拼这个图的指引
 center, chains = get_instructions("./instructions.json")
@@ -28,9 +26,8 @@ imgs = dict(
 IMAGE_HEIGHT = imgs[center_idx].shape[0]
 IMAGE_WIDTH = imgs[center_idx].shape[1]
 
-
 # 扩展画布
-CANVAS_HEIGHT, CANVAS_WIDTH = 3000, 4500
+CANVAS_HEIGHT, CANVAS_WIDTH = 4000, 6000
 
 x_offset = (CANVAS_WIDTH - IMAGE_WIDTH) // 2
 y_offset = (CANVAS_HEIGHT - IMAGE_HEIGHT) // 2
@@ -43,15 +40,17 @@ canvas = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH, 3), dtype=np.uint8)
 
 # 把所有图像挪到画布中间
 for img_idx in imgs.keys():
-    canvas[y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :] = imgs[img_idx]
+    canvas[y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :] = (
+        imgs[img_idx]
+    )
     imgs[img_idx] = canvas.copy()
     cv2.imshow(f"{img_idx=}", cv2.resize(imgs[img_idx], (1500, 1000)))
     cv2.waitKey(0)
     cv2.destroyWindow(f"{img_idx=}")
 
-cv2.imshow("Canvas", cv2.resize(canvas, (1500, 1000)))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow("Canvas", cv2.resize(canvas, (1500, 1000)))
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 # 计算关键点
 kps_descs_dict: dict[int, tuple[tuple[cv2.KeyPoint], np.ndarray]] = {}
@@ -71,7 +70,7 @@ for chain in chains.values():
                 kps_descs_dict[src_idx][1],
                 kps_descs_dict[dst_idx][1],
             )
-            out = np.zeros((IMAGE_HEIGHT, IMAGE_WIDTH*2, 3))
+            out = np.zeros((IMAGE_HEIGHT, IMAGE_WIDTH * 2, 3))
             kps1 = kps_descs_dict[src_idx][0]
             kps2 = kps_descs_dict[dst_idx][0]
             matches = matches_dict[junction]
@@ -81,10 +80,9 @@ for chain in chains.values():
             # plt.imshow(out[:,:,::-1])
             # print(f"matches:{src_idx=},{dst_idx=}")
             # plt.show()
-            cv2.imshow(f"matches:{src_idx=},{dst_idx=}", out)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
+            # cv2.imshow(f"matches:{src_idx=},{dst_idx=}", out)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
 # 构建所有需要的单应性矩阵
 warps_dict: dict[tuple[int, int], np.ndarray] = {}
@@ -110,7 +108,6 @@ for chain in chains.values():
             warps_dict[junction] = P
             print(f"P{src_idx=},{dst_idx=}=\n{P}")
 
-
 # 开拼
 for img_idx, chain in chains.items():
     img = imgs[img_idx]
@@ -132,9 +129,9 @@ for img_idx, chain in chains.items():
     # canvas = cv2.seamlessClone(img, canvas, mask, (CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2), cv2.NORMAL_CLONE)
     canvas = cv2.copyTo(img, mask, canvas)
 
-    cv2.imshow(f"{img_idx=}", cv2.resize(img, (1500, 1000)))
-    cv2.waitKey(0)
-    cv2.destroyWindow(f"{img_idx=}")
+    # cv2.imshow(f"{img_idx=}", cv2.resize(img, (1500, 1000)))
+    # cv2.waitKey(0)
+    # cv2.destroyWindow(f"{img_idx=}")
     # plt.imshow(img[:,:,::-1])
     # plt.show()
 cv2.imshow("Canvas", cv2.resize(canvas, (1500, 1000)))

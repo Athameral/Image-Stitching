@@ -2,7 +2,7 @@ import json
 
 
 def build_chains(
-    center: str, instruct_chains: dict[str, list[str]]
+        center: str, instruct_chains: dict[str, list[str]]
 ) -> dict[int, list[tuple[int, int]]]:
     center = int(center.split(".")[0])
     result: dict[int, list[tuple[int, int]]] = {}
