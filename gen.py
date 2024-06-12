@@ -29,7 +29,7 @@ IMAGE_HEIGHT = imgs[center_idx].shape[0]
 IMAGE_WIDTH = imgs[center_idx].shape[1]
 
 
-# 把原中心图挪到画布中间
+# 扩展画布
 CANVAS_HEIGHT, CANVAS_WIDTH = 3000, 4500
 
 x_offset = (CANVAS_WIDTH - IMAGE_WIDTH) // 2
@@ -38,14 +38,16 @@ print(f"{x_offset=},{y_offset=}")
 
 canvas = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH, 3), dtype=np.uint8)
 
-canvas[y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :] = imgs[
-    center_idx
-]
 # cv2.imshow("canvas", cv2.resize(canvas, (1500, 1000)))
 # cv2.waitKey(0)
 
-# 这句很重要
-imgs[center_idx] = canvas
+# 把所有图像挪到画布中间
+for img_idx in imgs.keys():
+    canvas[y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :] = imgs[img_idx]
+    imgs[img_idx] = canvas.copy()
+    cv2.imshow(f"{img_idx=}", cv2.resize(imgs[img_idx], (1500, 1000)))
+    cv2.waitKey(0)
+    cv2.destroyWindow(f"{img_idx=}")
 
 cv2.imshow("Canvas", cv2.resize(canvas, (1500, 1000)))
 cv2.waitKey(0)
