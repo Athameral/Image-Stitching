@@ -4,3 +4,7 @@
 ## Usage
 
 Just a working demo now. I guess you know how to use.
+
+## Demo Result
+
+![Demo Result](./doc/demoresult.png)
