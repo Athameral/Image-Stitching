@@ -39,15 +39,8 @@ canvas = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH, 3), dtype=np.uint8)
 # cv2.imshow("canvas", cv2.resize(canvas, (1500, 1000)))
 # cv2.waitKey(0)
 
-# 把所有图像挪到画布中间
-for img_idx in imgs.keys():
-    canvas[y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :] = (
-        imgs[img_idx]
-    )
-    imgs[img_idx] = canvas.copy()
-    cv2.imshow(f"{img_idx=}", cv2.resize(imgs[img_idx], (1500, 1000)))
-    cv2.waitKey(0)
-    cv2.destroyWindow(f"{img_idx=}")
+# Center all the images to the larger canvas
+center_images(imgs, IMAGE_HEIGHT, IMAGE_WIDTH, x_offset, y_offset, canvas)
 
 # cv2.imshow("Canvas", cv2.resize(canvas, (1500, 1000)))
 # cv2.waitKey(0)
