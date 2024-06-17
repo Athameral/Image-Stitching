@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 
-from utils import build_chains, get_instructions
+from utils import build_chains2, get_instructions2
+from cvoperations import center_images
 
 # 读取关于如何拼这个图的指引
-center, chains = get_instructions("./instructions.json")
-chains = build_chains(center, chains)
+center, chains = get_instructions2("./instructions.json")
+chains = build_chains2(center, chains)
 center_idx = int(center.split(".")[0])
 
 imgs = [str(key) + ".JPG" for key in chains.keys()]
