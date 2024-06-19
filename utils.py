@@ -48,19 +48,18 @@ def get_instructions2(path_to_instruction: str) -> tuple[str, dict[str, str]]:
 
 def build_chains2(
     center: str, instruct_pairs: dict[str, str]
-) -> dict[int, list[tuple[int, int]]]:
-    center_idx = int(center.split(".")[0])
-    result: dict[int, list[tuple[int, int]]] = {}
+) -> dict[str, list[tuple[str, str]]]:
+    # center_idx = int(center.split(".")[0])
+    result: dict[str, list[tuple[str, str]]] = {}
     for img, dest in instruct_pairs.items():
-        img_idx = int(img.split(".")[0])
-        prev_junction = img_idx
-        result[img_idx] = []
+        prev_junction = img
+        result[img] = []
         while dest != "":
-            junction = int(dest.split(".")[0])
+            junction = dest
             dest = instruct_pairs[dest]
-            result[img_idx].append((prev_junction, junction))
+            result[img].append((prev_junction, junction))
             prev_junction = junction
-        result[img_idx].append((prev_junction, center_idx))
+        result[img].append((prev_junction, center))
     return result
 
 if __name__ == "__main__":

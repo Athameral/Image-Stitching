@@ -3,48 +3,48 @@ import numpy as np
 
 
 def center_images(
-    imgs: dict[int, cv2.typing.MatLike],
+    imgs: dict[str, cv2.typing.MatLike],
     IMAGE_HEIGHT: int,
     IMAGE_WIDTH: int,
     x_offset: int,
     y_offset: int,
     canvas: cv2.typing.MatLike,
 ):
-    for img_idx in imgs.keys():
+    for img_name in imgs.keys():
         canvas[
             y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :
-        ] = imgs[img_idx]
-        imgs[img_idx] = canvas.copy()
+        ] = imgs[img_name]
+        imgs[img_name] = canvas.copy()
         # cv2.imshow(f"{img_idx=}", cv2.resize(imgs[img_idx], (1500, 1000)))
         # cv2.waitKey(0)
         # cv2.destroyWindow(f"{img_idx=}")
 
 
-def get_kps_descs_dict(imgs: dict[int, cv2.typing.MatLike], detector: cv2.SIFT):
-    kps_descs_dict: dict[int, tuple[tuple[cv2.KeyPoint], np.ndarray]] = {}
-    for img_idx, img in imgs.items():
-        if img_idx not in kps_descs_dict:
-            kps_descs_dict[img_idx] = detector.detectAndCompute(img, None)
+def get_kps_descs_dict(imgs: dict[str, cv2.typing.MatLike], detector: cv2.SIFT):
+    kps_descs_dict: dict[str, tuple[tuple[cv2.KeyPoint], np.ndarray]] = {}
+    for img_name, img in imgs.items():
+        if img_name not in kps_descs_dict:
+            kps_descs_dict[img_name] = detector.detectAndCompute(img, None)
     return kps_descs_dict
 
 
 def get_matches_dict(
-    chains: dict[int, list[tuple[int, int]]],
-    kps_descs_dict: dict[int, tuple[tuple[cv2.KeyPoint], np.ndarray]],
+    chains: dict[str, list[tuple[str, str]]],
+    kps_descs_dict: dict[str, tuple[tuple[cv2.KeyPoint], np.ndarray]],
     matcher: cv2.BFMatcher,
 ):
-    matches_dict: dict[tuple[int, int], tuple[cv2.DMatch]] = {}
+    matches_dict: dict[tuple[str, str], tuple[cv2.DMatch]] = {}
     for chain in chains.values():
         for junction in chain:
             if junction not in matches_dict:
-                src_idx, dst_idx = junction
+                src_name, dst_name = junction
                 # Note that, we try to match the descriptors here, i.e.,
                 # calculate the distance between every 2 descriptors.
                 matches_dict[junction] = matcher.match(
                     # Take especial care for this, query is the source,
                     # whereas train is the destination.
-                    kps_descs_dict[src_idx][1],
-                    kps_descs_dict[dst_idx][1],
+                    kps_descs_dict[src_name][1],
+                    kps_descs_dict[dst_name][1],
                 )
     # out = np.zeros((IMAGE_HEIGHT, IMAGE_WIDTH * 2, 3))
     # kps1 = kps_descs_dict[src_idx][0]
@@ -57,22 +57,22 @@ def get_matches_dict(
 
 
 def get_warps_dict(
-    chains: dict[int, list[tuple[int, int]]],
-    kps_descs_dict: dict[int, tuple[tuple[cv2.KeyPoint], np.ndarray]],
-    matches_dict: dict[tuple[int, int], tuple[cv2.DMatch]],
+    chains: dict[str, list[tuple[str, str]]],
+    kps_descs_dict: dict[str, tuple[tuple[cv2.KeyPoint], np.ndarray]],
+    matches_dict: dict[tuple[str, str], tuple[cv2.DMatch]],
 ):
-    warps_dict: dict[tuple[int, int], np.ndarray] = {}
+    warps_dict: dict[tuple[str, str], np.ndarray] = {}
     for chain in chains.values():
         for junction in chain:
             if junction not in warps_dict:
-                src_idx, dst_idx = junction
+                src_name, dst_name = junction
                 matches = matches_dict[junction]
                 P, mask = cv2.findHomography(
                     np.array(
-                        [kps_descs_dict[src_idx][0][m.queryIdx].pt for m in matches]
+                        [kps_descs_dict[src_name][0][m.queryIdx].pt for m in matches]
                     ).reshape(-1, 2),
                     np.array(
-                        [kps_descs_dict[dst_idx][0][m.trainIdx].pt for m in matches]
+                        [kps_descs_dict[dst_name][0][m.trainIdx].pt for m in matches]
                     ).reshape(-1, 2),
                     cv2.RANSAC,
                 )
@@ -82,20 +82,20 @@ def get_warps_dict(
                 #     P[1, 2] += y_offset
 
                 warps_dict[junction] = P
-                print(f"P{src_idx=},{dst_idx=}=\n{P}")
+                print(f"P{src_name=},{dst_name=}=\n{P}")
     return warps_dict
 
 
 def stitch_images(
-    chains: dict[int, list[tuple[int, int]]],
-    imgs: dict[int, cv2.typing.MatLike],
+    chains: dict[str, list[tuple[str, str]]],
+    imgs: dict[str, cv2.typing.MatLike],
     CANVAS_HEIGHT: int,
     CANVAS_WIDTH: int,
     canvas: cv2.typing.MatLike,
-    warps_dict: dict[tuple[int, int], np.ndarray],
+    warps_dict: dict[tuple[str, str], np.ndarray],
 ):
-    for img_idx, chain in chains.items():
-        img = imgs[img_idx]
+    for img_name, chain in chains.items():
+        img = imgs[img_name]
         for junction in chain:
             P = warps_dict[junction]
             img = cv2.warpPerspective(
