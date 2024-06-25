@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from tqdm import tqdm
 
 def center_images(
     imgs: dict[str, cv2.typing.MatLike],
@@ -10,7 +11,7 @@ def center_images(
     y_offset: int,
     canvas: cv2.typing.MatLike,
 ):
-    for img_name in imgs.keys():
+    for img_name in tqdm(imgs.keys(), desc="Centering Images"):
         canvas[
             y_offset : y_offset + IMAGE_HEIGHT, x_offset : x_offset + IMAGE_WIDTH, :
         ] = imgs[img_name]
@@ -22,7 +23,7 @@ def center_images(
 
 def get_kps_descs_dict(imgs: dict[str, cv2.typing.MatLike], detector: cv2.SIFT):
     kps_descs_dict: dict[str, tuple[tuple[cv2.KeyPoint], np.ndarray]] = {}
-    for img_name, img in imgs.items():
+    for img_name, img in tqdm(imgs.items(), desc="Running SIFT"):
         if img_name not in kps_descs_dict:
             kps_descs_dict[img_name] = detector.detectAndCompute(img, None)
     return kps_descs_dict
@@ -34,7 +35,7 @@ def get_matches_dict(
     matcher: cv2.BFMatcher,
 ):
     matches_dict: dict[tuple[str, str], tuple[cv2.DMatch]] = {}
-    for chain in chains.values():
+    for chain in tqdm(chains.values(), desc="Matching"):
         for junction in chain:
             if junction not in matches_dict:
                 src_name, dst_name = junction
@@ -62,7 +63,7 @@ def get_warps_dict(
     matches_dict: dict[tuple[str, str], tuple[cv2.DMatch]],
 ):
     warps_dict: dict[tuple[str, str], np.ndarray] = {}
-    for chain in chains.values():
+    for chain in tqdm(chains.values(), desc="Calculating Homography"):
         for junction in chain:
             if junction not in warps_dict:
                 src_name, dst_name = junction
@@ -94,7 +95,7 @@ def stitch_images(
     canvas: cv2.typing.MatLike,
     warps_dict: dict[tuple[str, str], np.ndarray],
 ):
-    for img_name, chain in chains.items():
+    for img_name, chain in tqdm(chains.items(), "Stitching"):
         img = imgs[img_name]
         for junction in chain:
             P = warps_dict[junction]
