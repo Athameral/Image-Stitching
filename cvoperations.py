@@ -82,7 +82,7 @@ def get_warps_dict(
                 #     P[1, 2] += y_offset
 
                 warps_dict[junction] = P
-                print(f"P{src_name=},{dst_name=}=\n{P}")
+                # print(f"P{src_name=},{dst_name=}=\n{P}")
     return warps_dict
 
 
@@ -101,7 +101,7 @@ def stitch_images(
             img = cv2.warpPerspective(
                 src=img,
                 M=P,
-                # 在OpenCV中，图像size一般是先指定宽，后指定高
+                # In OpenCV, widths are assigned first, while heights second.
                 dsize=(CANVAS_WIDTH, CANVAS_HEIGHT),
                 dst=None,
                 borderMode=cv2.BORDER_CONSTANT,
