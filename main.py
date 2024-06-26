@@ -16,7 +16,7 @@ def main():
     stitcher = Stitcher(
         contrastThreshold=args["contrastThreshold"],
         edgeThreshold=args["edgeThreshold"],
-        instructionPath=["instructions"],
+        instructionPath=args["instructions"],
         imageFolderPath=args["imagesFolder"],
     )
     stitcher.stitch()
