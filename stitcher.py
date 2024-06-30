@@ -35,7 +35,7 @@ class Stitcher:
 
     def stitch(self, showResult: bool = False, savePath: str | None = None):
         # Read the instructions on how to stitch the images.
-        center, chains = get_instructions2("./instructions.json")
+        center, chains = get_instructions2(self.instructionPath)
         chains = build_chains2(center, chains)
 
         imgs = list(chains.keys())
