@@ -3,6 +3,7 @@ import numpy as np
 
 from tqdm import tqdm
 
+
 def center_images(
     imgs: dict[str, cv2.typing.MatLike],
     IMAGE_HEIGHT: int,
@@ -95,21 +96,34 @@ def stitch_images(
     canvas: cv2.typing.MatLike,
     warps_dict: dict[tuple[str, str], np.ndarray],
 ):
+    x_offset = (CANVAS_WIDTH - next(iter(imgs.values())).shape[1]) / 2
+    y_offset = (CANVAS_HEIGHT - next(iter(imgs.values())).shape[0]) / 2
+    M = np.array(
+        [
+            [1, 0, x_offset],
+            [0, 1, y_offset],
+            [0, 0, 1],
+        ],
+        dtype=np.float32,
+    )
     for img_name, chain in tqdm(chains.items(), "Stitching"):
         img = imgs[img_name]
+        P = np.eye(3)
         for junction in chain:
-            P = warps_dict[junction]
-            img = cv2.warpPerspective(
-                src=img,
-                M=P,
-                # In OpenCV, widths are assigned first, while heights second.
-                dsize=(CANVAS_WIDTH, CANVAS_HEIGHT),
-                dst=None,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=(0, 0, 0),
-            )
+            P = warps_dict[junction] @ P
+
+        img = cv2.warpPerspective(
+            src=img,
+            M=M @ P,
+            # In OpenCV, widths are assigned first, while heights second.
+            dsize=(CANVAS_WIDTH, CANVAS_HEIGHT),
+            dst=None,
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=(0, 0, 0),
+        )
         mask = (img > 0).astype(np.uint8) * 255
-        # cv2.imshow(f"mask: {img_idx=}", cv2.resize(mask, (1500, 1000)))
+        # cv2.imshow(f"mask: {img_name=}", cv2.resize(mask, (1500, 1000)))
+        # cv2.waitKey(0)
 
         # Code below will give awful result, it's not correct.
         # canvas = cv2.seamlessClone(img, canvas, mask, (CANVAS_WIDTH // 2, CANVAS_HEIGHT // 2), cv2.NORMAL_CLONE)

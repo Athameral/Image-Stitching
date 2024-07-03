@@ -47,11 +47,11 @@ class Stitcher:
         IMAGE_WIDTH = imgs[center].shape[1]
 
         # Enlarge the canvas
-        x_offset = (self.CANVAS_WIDTH - IMAGE_WIDTH) // 2
-        y_offset = (self.CANVAS_HEIGHT - IMAGE_HEIGHT) // 2
+        # x_offset = (self.CANVAS_WIDTH - IMAGE_WIDTH) // 2
+        # y_offset = (self.CANVAS_HEIGHT - IMAGE_HEIGHT) // 2
 
         # Center all the images to the larger canvas
-        center_images(imgs, IMAGE_HEIGHT, IMAGE_WIDTH, x_offset, y_offset, self.canvas)
+        # center_images(imgs, IMAGE_HEIGHT, IMAGE_WIDTH, x_offset, y_offset, self.canvas)
 
         # Calculate keypoints and get descriptors for each keypoint.
         kps_descs_dict = get_kps_descs_dict(imgs, self.detector)
